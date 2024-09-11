@@ -131,7 +131,7 @@ if __name__ == '__main__':
     trainer = Trainer(
         model=model,        
         args=training_args,
-        optimizer=(optimizer, scheduler),
+        optimizers=(optimizer, scheduler),
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         data_collator=data_collator,
