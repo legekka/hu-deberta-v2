@@ -5,7 +5,7 @@ import wandb
 import random
 
 from accelerate import Accelerator
-from transformers import Trainer, TrainingArguments, DataCollatorForLanguageModeling, AutoModelForMaskedLM, AutoTokenizer
+from transformers import Trainer, TrainingArguments, DataCollatorForLanguageModeling, AutoModelForMaskedLM, AutoTokenizer, AdamW, get_scheduler
 from datasets import load_dataset
 
 from modules.config import Config
@@ -90,6 +90,17 @@ if __name__ == '__main__':
         for key in config._jsonData.keys():
             print(f"{key}: {config._jsonData[key]}")
         print("-----------------------")
+    
+    # this is calculated based on the number of epochs and the length of the training dataset, divided by the (batch size * gradient accumulation steps * number of gpus)
+    num_training_steps = num_epochs * len(train_dataset) // (config.batch_size * config.gradient_accumulation_steps * accelerator.num_processes)
+
+    optimizer = AdamW(model.parameters(), lr=config.learning_rate)
+    scheduler = get_scheduler(
+        config.scheduler,
+        optimizer=optimizer,
+        num_warmup_steps=config.warmup_steps,
+        num_training_steps=num_training_steps
+    )
 
     training_args = TrainingArguments(
         output_dir=config.output_dir,
@@ -98,7 +109,6 @@ if __name__ == '__main__':
         gradient_accumulation_steps=config.gradient_accumulation_steps,
         num_train_epochs=num_epochs,
         lr_scheduler_type=config.scheduler,
-        optim=config.optimizer,
         learning_rate=config.learning_rate,
         logging_steps=config.logging_steps,
         logging_dir=config.output_dir,
@@ -121,6 +131,7 @@ if __name__ == '__main__':
     trainer = Trainer(
         model=model,        
         args=training_args,
+        optimizer=(optimizer, scheduler),
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         data_collator=data_collator,
@@ -135,7 +146,8 @@ if __name__ == '__main__':
 
     model.config.use_cache = False # mute warnings
 
-
-    model, train_dataset, eval_dataset = accelerator.prepare(model, train_dataset, eval_dataset)
+    model, optimizer, scheduler, train_dataset, eval_dataset = accelerator.prepare(
+        model, optimizer, scheduler, train_dataset, eval_dataset
+    )
  
     trainer.train()

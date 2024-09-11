@@ -1,4 +1,6 @@
 transformers
+datasets
 accelerate
+deepspeed
 tqdm
 wandb
