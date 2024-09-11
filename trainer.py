@@ -111,13 +111,13 @@ if __name__ == '__main__':
     # this is calculated based on the number of epochs and the length of the training dataset, divided by the (batch size * gradient accumulation steps * number of gpus)
     num_training_steps = num_epochs * len(train_dataset) // (config.batch_size * config.gradient_accumulation_steps * accelerator.num_processes)
 
-    optimizer = AdamW(model.parameters(), lr=config.learning_rate)
-    scheduler = get_scheduler(
-        config.scheduler,
-        optimizer=optimizer,
-        num_warmup_steps=config.warmup_steps,
-        num_training_steps=num_training_steps
-    )
+    # optimizer = AdamW(model.parameters(), lr=config.learning_rate)
+    # scheduler = get_scheduler(
+    #     config.scheduler,
+    #     optimizer=optimizer,
+    #     num_warmup_steps=config.warmup_steps,
+    #     num_training_steps=num_training_steps
+    # )
 
     training_args = TrainingArguments(
         output_dir=config.output_dir,
@@ -148,7 +148,7 @@ if __name__ == '__main__':
     trainer = CustomTrainer(
         model=model,        
         args=training_args,
-        optimizers=(optimizer, scheduler),
+        #optimizers=(optimizer, scheduler),
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         data_collator=data_collator,
@@ -163,8 +163,8 @@ if __name__ == '__main__':
 
     model.config.use_cache = False # mute warnings
 
-    model, optimizer, scheduler, train_dataset, eval_dataset = accelerator.prepare(
-        model, optimizer, scheduler, train_dataset, eval_dataset
+    model, train_dataset, eval_dataset = accelerator.prepare(
+        model, train_dataset, eval_dataset
     )
  
     trainer.train()
