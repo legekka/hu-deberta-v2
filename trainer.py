@@ -14,6 +14,23 @@ torch.backends.cudnn.deterministic = True
 torch.manual_seed(42)
 random.seed(42)
 
+class CustomTrainer(Trainer):
+    def create_optimizer_and_scheduler(self, num_training_steps: int):
+        # If DeepSpeed is enabled, no need to manually create optimizer or scheduler
+        if self.args.deepspeed:
+            return
+
+        # Initialize the optimizer manually
+        self.optimizer = AdamW(self.model.parameters(), lr=self.args.learning_rate)
+
+        # Initialize the scheduler manually
+        self.lr_scheduler = get_scheduler(
+            name=self.args.lr_scheduler_type,
+            optimizer=self.optimizer,
+            num_warmup_steps=self.args.warmup_steps,
+            num_training_steps=num_training_steps,
+        )
+
 def tokenize_text(examples):
     global tokenizer
     global config
@@ -128,7 +145,7 @@ if __name__ == '__main__':
 
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=config.mlm_probability)
 
-    trainer = Trainer(
+    trainer = CustomTrainer(
         model=model,        
         args=training_args,
         optimizers=(optimizer, scheduler),
