@@ -163,8 +163,8 @@ if __name__ == '__main__':
 
     model.config.use_cache = False # mute warnings
 
-    model, optimizer, scheduler, train_dataset, eval_dataset = accelerator.prepare(
-        model, optimizer, scheduler, train_dataset, eval_dataset
+    model, optimizer, scheduler, train_dataset, eval_dataset, trainer = accelerator.prepare(
+        model, optimizer, scheduler, train_dataset, eval_dataset, trainer
     )
  
     trainer.train()
