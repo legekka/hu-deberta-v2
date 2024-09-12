@@ -83,9 +83,18 @@ if __name__ == '__main__':
         print(f"Tokenizer initialized with {len(tokenizer)} tokens.")
 
     # Load the dataset
-    train_dataset = load_dataset(config.train_dataset, **config.train_dataset_kwargs)
-    eval_dataset = load_dataset(config.eval_dataset, **config.eval_dataset_kwargs)
-    
+    dataset = load_dataset(path=config.train_dataset["path"], name=config.train_dataset["name"], split=config.train_dataset["split"])
+
+    # Split the dataset into training and evaluation
+    train_test_split = dataset.train_test_split(
+        test_size=config.eval_dataset_split_size,
+        train_size=len(dataset) - config.eval_dataset_split_size,
+        shuffle=True,
+        seed=42        
+    )
+    train_dataset = train_test_split["train"]
+    eval_dataset = train_test_split["test"]
+
     # Apply tokenization on the fly
     train_dataset.set_transform(tokenize_text)
     eval_dataset.set_transform(tokenize_text)

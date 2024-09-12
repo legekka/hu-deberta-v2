@@ -19,11 +19,16 @@ class Config:
         self.tokenizer = self._jsonData["tokenizer"]
         
         self.output_dir = self._jsonData["output_dir"]
-        self.train_dataset = self._jsonData["train_dataset"]
-        self.train_dataset_kwargs = self._jsonData["train_dataset_kwargs"]
+        if "train_dataset" in self._jsonData:
+            self.train_dataset = {
+                "path": self._jsonData["train_dataset"]["path"],
+                "name": self._jsonData["train_dataset"]["name"],
+                "split": self._jsonData["train_dataset"]["split"],
+            }
+        else:
+            self.train_dataset = self._jsonData["train_dataset"]
 
-        self.eval_dataset = self._jsonData["eval_dataset"] if "eval_dataset" in self._jsonData else None
-        self.eval_dataset_kwargs = self._jsonData["eval_dataset_kwargs"] if "eval_dataset_kwargs" in self._jsonData else {}
+        self.eval_dataset_split_size = self._jsonData["eval_dataset_split_size"] if "eval_dataset_split_size" in self._jsonData else 1000
 
         self.max_seq_length = self._jsonData["max_seq_length"] if "max_seq_length" in self._jsonData else 512
 

@@ -3,19 +3,15 @@
     "model": "models/hu-deberta-v2-base",
     "tokenizer": "models/hu-deberta-v2-base",
     "output_dir": "outputs/base-pretraining",
-    "train_dataset": "uonlp/CulturaX",
-    "train_dataset_kwargs": {
+    "train_dataset": {
+        "path": "uonlp/CulturaX",
         "name": "hu",
-        "split": "train[:99%]"
+        "split": "train[:20000]"
     },
-    "eval_dataset": "uonlp/CulturaX",
-    "eval_dataset_kwargs": {
-        "name": "hu",
-        "split": "train[99%:]"
-    },
+    "eval_dataset_split_size": 1000,
     "max_seq_length": 1024,
-    "batch_size": 8,
-    "gradient_accumulation_steps": 2,
+    "batch_size": 4,
+    "gradient_accumulation_steps": 4,
     "num_epochs": 1,
     "num_workers": 2,
     "learning_rate": 1e-4,
