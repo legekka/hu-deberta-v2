@@ -10,7 +10,7 @@ config = DebertaV2Config(
     hidden_size=768,
     initializer_range=0.02,
     intermediate_size=3072,
-    max_position_embeddings=1024,
+    max_position_embeddings=2048,
     relative_attention=True,
     pos_att_type="c2p|p2c",
     layer_norm_eps=1e-7,
@@ -24,6 +24,10 @@ config = DebertaV2Config(
 )
 
 model = DebertaV2ForMaskedLM(config)
+# print model paramter count
+print(f"Model initialized with {model.num_parameters()} parameters.")
+# print tokenizer vocab size
+print(f"Tokenizer initialized with {len(tokenizer)} tokens.")
 
 # model name: hu-deberta-v2-base
 model.save_pretrained("hu-deberta-v2-base")
