@@ -20,7 +20,7 @@
     "optimizer": "adamw_torch",
     "scheduler": "cosine",
     "logging_steps": 100,
-    "save_steps": 50000,
+    "save_steps": 100000,
     "wandb": {
         "project": "hu-deberta-v2",
         "name": "base-512",
