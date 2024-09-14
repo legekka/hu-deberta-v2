@@ -19,7 +19,7 @@
     "mlm_probability": 0.15,
     "optimizer": "adamw_torch",
     "scheduler": "cosine",
-    "logging_steps": 100,
+    "logging_steps": 5,
     "save_steps": 20000,
     "wandb": {
         "project": "hu-deberta-v2",
