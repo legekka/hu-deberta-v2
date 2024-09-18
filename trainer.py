@@ -146,10 +146,11 @@ if __name__ == '__main__':
         bf16=True,
         report_to="wandb" if args.wandb else "none",
         ddp_find_unused_parameters=False,
-        dataloader_persistent_workers=True,
+        dataloader_persistent_workers=True if config.num_workers > 0 else False,
         dataloader_num_workers=config.num_workers,
         warmup_steps=config.warmup_steps,
         # include_tokens_per_second=True,
+        resume_from_checkpoint=args.resume if args.resume is not None else None
     )
 
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=config.mlm_probability)
