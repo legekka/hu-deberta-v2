@@ -4,3 +4,5 @@ accelerate
 deepspeed
 tqdm
 wandb
+scikit-learn
+evaluate
