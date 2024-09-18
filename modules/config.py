@@ -19,14 +19,17 @@ class Config:
         self.tokenizer = self._jsonData["tokenizer"]
         
         self.output_dir = self._jsonData["output_dir"]
-        if "train_dataset" in self._jsonData:
+
+        if isinstance(self._jsonData["train_dataset"], str):
+            self.train_dataset = self._jsonData["train_dataset"]
+        elif isinstance(self._jsonData["train_dataset"], dict):
             self.train_dataset = {
                 "path": self._jsonData["train_dataset"]["path"],
                 "name": self._jsonData["train_dataset"]["name"],
                 "split": self._jsonData["train_dataset"]["split"],
             }
         else:
-            self.train_dataset = self._jsonData["train_dataset"]
+            raise ValueError("train_dataset must be a string or a dictionary.")
 
         self.eval_dataset_split_size = self._jsonData["eval_dataset_split_size"] if "eval_dataset_split_size" in self._jsonData else 1000
 
