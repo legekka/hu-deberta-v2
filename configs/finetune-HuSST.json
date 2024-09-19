@@ -5,7 +5,7 @@
     "output_dir": "outputs/finetune-HuSST",
     "train_dataset": "eval_datasets/HuSST",
     "max_seq_length": 128,
-    "batch_size": 32,
+    "batch_size": 16,
     "gradient_accumulation_steps": 1,
     "num_epochs": 3,
     "num_workers": 0,
