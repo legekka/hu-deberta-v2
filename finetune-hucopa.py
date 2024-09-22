@@ -1,5 +1,4 @@
-# HuCOLA: Evaluation metrics for language models measuring the grammatical correctness of hungarian sentences
-# Models have to be finetuned as single_label_classification problems
+# don't use this, needs consulting with the author of the evaluation test.
 
 import os
 import argparse
@@ -75,7 +74,7 @@ def tokenize_text(examples):
     sep_token = tokenizer.sep_token
 
     # create the text input from premise, choice1 and choice2
-    examples["text"] = [f"{premise} {sep_token} {choice1} {sep_token} {choice2}" for premise, choice1, choice2 in zip(examples["premise"], examples["choice1"], examples["choice2"])]
+    examples["text"] = [f"{premise} {choice1} {choice2}" for premise, choice1, choice2 in zip(examples["premise"], examples["choice1"], examples["choice2"])]
 
     inputs = tokenizer(
         examples['text'], 
@@ -122,7 +121,7 @@ if __name__ == '__main__':
     else:
         model = AutoModelForSequenceClassification.from_pretrained(config.model, num_labels=2, id2label=id2label, label2id=label2id)
 
-    # set the model for single label classification
+    for param in model.parameters(): param.data = param.data.contiguous()
     
     model.to(device)
     torch.cuda.empty_cache()
