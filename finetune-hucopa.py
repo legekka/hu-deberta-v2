@@ -12,7 +12,7 @@ from transformers import Trainer, TrainingArguments, AutoModelForSequenceClassif
 from datasets import load_dataset
 
 from modules.config import Config
-from modules.hulu import load_hucola_dataset
+from modules.hulu import load_hucopa_dataset
 
 import evaluate
 import numpy as np
@@ -72,6 +72,11 @@ def compute_metrics(eval_pred):
 def tokenize_text(examples):
     global tokenizer
     global config
+    sep_token = tokenizer.sep_token
+
+    # create the text input from premise, choice1 and choice2
+    examples["text"] = [f"{premise} {sep_token} {choice1} {sep_token} {choice2}" for premise, choice1, choice2 in zip(examples["premise"], examples["choice1"], examples["choice2"])]
+
     inputs = tokenizer(
         examples['text'], 
         padding="max_length",
@@ -108,8 +113,8 @@ else:
     tokenizer = AutoTokenizer.from_pretrained(config.tokenizer, use_fast=True)
 
 if __name__ == '__main__':
-    id2label = {0: "Incorrect", 1: "Correct"}
-    label2id = {"Incorrect": 0, "Correct": 1}
+    id2label = {0: "choice1", 1: "choice2"}
+    label2id = {"choice1": 0, "choice2": 1}
 
     # Initialize the model
     if args.resume is not None:
@@ -127,7 +132,7 @@ if __name__ == '__main__':
         print(f"Tokenizer initialized with {len(tokenizer)} tokens.")
 
     # Load the dataset
-    dataset = load_hucola_dataset(config.train_dataset)
+    dataset = load_hucopa_dataset(config.train_dataset)
     train_dataset = dataset["train"]
     eval_dataset = dataset["eval"]
 
