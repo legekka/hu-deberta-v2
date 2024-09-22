@@ -60,11 +60,11 @@ def load_hucola_dataset(directory_path):
 def load_hucopa_dataset(directory_path):
 
     with open(os.path.join(directory_path, 'data_train.json'), encoding="utf-8") as f:
-        train_data = json.load(f)["data"]
+        train_data = json.load(f)
     with open(os.path.join(directory_path, 'data_val.json'), encoding="utf-8") as f:
-        eval_data = json.load(f)["data"]
+        eval_data = json.load(f)
     with open(os.path.join(directory_path, 'data_test.json'), encoding="utf-8") as f:
-        test_data = json.load(f)["data"]
+        test_data = json.load(f)
 
     
     data = {
