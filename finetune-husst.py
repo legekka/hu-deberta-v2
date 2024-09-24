@@ -9,7 +9,7 @@ from transformers import Trainer, TrainingArguments, AutoModelForSequenceClassif
 from datasets import load_dataset
 
 from modules.config import Config
-from modules.husst_dataset import load_husst_dataset
+from modules.hulu import load_husst_dataset
 
 import evaluate
 import numpy as np
