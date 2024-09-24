@@ -63,11 +63,17 @@ class CustomTrainer(Trainer):
 
 
 accuracy = evaluate.load("accuracy")
+matthews_corrcoef = evaluate.load("matthews_correlation")
 
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
     predictions = np.argmax(predictions, axis=1)
-    return accuracy.compute(predictions=predictions, references=labels)
+    acc = accuracy.compute(predictions=predictions, references=labels)
+    mcc = matthews_corrcoef .compute(predictions=predictions, references=labels)
+    return {
+        "accuracy": acc,
+        "mcc": mcc
+    }
 
 def tokenize_text(examples):
     global tokenizer
