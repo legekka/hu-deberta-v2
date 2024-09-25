@@ -95,6 +95,8 @@ if __name__ == '__main__':
     train_dataset = train_test_split["train"]
     eval_dataset = train_test_split["test"]
 
+    train_dataset = train_dataset.shuffle(seed=42)
+
     # Apply tokenization on the fly
     train_dataset.set_transform(tokenize_text)
     eval_dataset.set_transform(tokenize_text)
