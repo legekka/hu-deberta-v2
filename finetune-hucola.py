@@ -13,6 +13,7 @@ from datasets import load_dataset
 
 from modules.config import Config
 from modules.hulu import load_hucola_dataset
+from modules.scheduler import CosineAnnealingWithWarmupAndEtaMin
 
 import evaluate
 import numpy as np
@@ -38,6 +39,7 @@ def get_class_weights(dataset):
 
 class CustomTrainer(Trainer):
     def create_optimizer_and_scheduler(self, num_training_steps: int):
+        global config
         # If DeepSpeed is enabled, no need to manually create optimizer or scheduler
         if self.args.deepspeed:
             return
@@ -46,12 +48,20 @@ class CustomTrainer(Trainer):
         self.optimizer = AdamW(self.model.parameters(), lr=self.args.learning_rate)
 
         # Initialize the scheduler manually
-        self.lr_scheduler = get_scheduler(
-            name=self.args.lr_scheduler_type,
-            optimizer=self.optimizer,
-            num_warmup_steps=self.args.warmup_steps,
-            num_training_steps=num_training_steps,
-        )
+        if config.scheduler == "cosine" and config.eta_min != 0.0:
+            self.lr_scheduler = CosineAnnealingWithWarmupAndEtaMin(
+                self.optimizer,
+                T_max=num_training_steps,
+                eta_min=config.eta_min,
+                warmup_steps=self.args.warmup_steps
+            )
+        else:
+            self.lr_scheduler = get_scheduler(
+                config.scheduler,
+                optimizer=self.optimizer,
+                num_warmup_steps=self.args.warmup_steps,
+                num_training_steps=num_training_steps
+            )
 
     def compute_loss(self, model, inputs, return_outputs=False):
         global loss_fn
@@ -170,12 +180,20 @@ if __name__ == '__main__':
     num_training_steps = num_epochs * len(train_dataset) // (config.batch_size * config.gradient_accumulation_steps * accelerator.num_processes)
 
     optimizer = AdamW(model.parameters(), lr=config.learning_rate)
-    scheduler = get_scheduler(
-        config.scheduler,
-        optimizer=optimizer,
-        num_warmup_steps=config.warmup_steps,
-        num_training_steps=num_training_steps
-    )
+    if config.scheduler == "cosine" and config.eta_min != 0.0:
+        scheduler = CosineAnnealingWithWarmupAndEtaMin(
+            optimizer,
+            T_max=num_training_steps,
+            eta_min=config.eta_min,
+            warmup_steps=config.warmup_steps
+        )
+    else:
+        scheduler = get_scheduler(
+            config.scheduler,
+            optimizer=optimizer,
+            num_warmup_steps=config.warmup_steps,
+            num_training_steps=num_training_steps
+        )
 
     training_args = TrainingArguments(
         output_dir=config.output_dir,
