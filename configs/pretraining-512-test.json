@@ -15,11 +15,11 @@
     "num_epochs": 1,
     "num_workers": 4,
     "learning_rate": 1e-4,
-    "warmup_steps": 100,
+    "warmup_steps": 10,
     "mlm_probability": 0.15,
     "optimizer": "adamw_torch",
     "scheduler": "cosine",
-    "logging_steps": 5,
+    "logging_steps": 1,
     "save_steps": 15000,
     "wandb": {
         "project": "hu-deberta-v2",
