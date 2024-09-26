@@ -3,6 +3,7 @@ import argparse
 import torch
 import wandb
 import random
+import math
 
 from accelerate import Accelerator
 from transformers import Trainer, TrainingArguments, DataCollatorForLanguageModeling, AutoModelForMaskedLM, AutoTokenizer, AdamW, get_scheduler
@@ -14,8 +15,37 @@ torch.backends.cudnn.deterministic = True
 torch.manual_seed(42)
 random.seed(42)
 
+class CosineAnnealingWithWarmupAndEtaMin(torch.optim.lr_scheduler._LRScheduler):
+    def __init__(self, optimizer, T_max, eta_min=0, last_epoch=-1, warmup_steps=0):
+        """
+        Custom Learning Rate Scheduler that combines Cosine Annealing with Warmup and minimum learning rate (eta_min).
+
+        Args:
+            optimizer (Optimizer): Wrapped optimizer.
+            T_max (int): Maximum number of iterations.
+            eta_min (float): Minimum learning rate. Default is 0.
+            last_epoch (int): The index of the last epoch. Default is -1.
+            warmup_steps (int): Number of warmup steps. Default is 0.
+        """
+        if T_max <= warmup_steps:
+            raise ValueError("T_max should be greater than warmup_steps.")
+        self.T_max = T_max
+        self.eta_min = eta_min
+        self.warmup_steps = warmup_steps
+        super(CosineAnnealingWithWarmupAndEtaMin, self).__init__(optimizer, last_epoch)
+
+    def get_lr(self):
+        if self.last_epoch < self.warmup_steps:
+            # Linear warmup phase
+            return [(self.last_epoch + 1) / self.warmup_steps * base_lr for base_lr in self.base_lrs]
+        else:
+            # Cosine annealing phase
+            cosine_decay = (1 + math.cos(math.pi * (self.last_epoch - self.warmup_steps) / (self.T_max - self.warmup_steps))) / 2
+            return [self.eta_min + (base_lr - self.eta_min) * cosine_decay for base_lr in self.base_lrs]
+
 class CustomTrainer(Trainer):
     def create_optimizer_and_scheduler(self, num_training_steps: int):
+        global config
         # If DeepSpeed is enabled, no need to manually create optimizer or scheduler
         if self.args.deepspeed:
             return
@@ -24,12 +54,20 @@ class CustomTrainer(Trainer):
         self.optimizer = AdamW(self.model.parameters(), lr=self.args.learning_rate)
 
         # Initialize the scheduler manually
-        self.lr_scheduler = get_scheduler(
-            name=self.args.lr_scheduler_type,
-            optimizer=self.optimizer,
-            num_warmup_steps=self.args.warmup_steps,
-            num_training_steps=num_training_steps,
-        )
+        if config.scheduler == "cosine" and config.eta_min != 0.0:
+            self.lr_scheduler = CosineAnnealingWithWarmupAndEtaMin(
+                self.optimizer,
+                T_max=num_training_steps,
+                eta_min=config.eta_min,
+                warmup_steps=self.args.warmup_steps
+            )
+        else:
+            self.lr_scheduler = get_scheduler(
+                config.scheduler,
+                optimizer=self.optimizer,
+                num_warmup_steps=self.args.warmup_steps,
+                num_training_steps=num_training_steps
+            )
 
 def tokenize_text(examples):
     global tokenizer
@@ -123,12 +161,20 @@ if __name__ == '__main__':
     num_training_steps = num_epochs * len(train_dataset) // (config.batch_size * config.gradient_accumulation_steps * accelerator.num_processes)
 
     optimizer = AdamW(model.parameters(), lr=config.learning_rate)
-    scheduler = get_scheduler(
-        config.scheduler,
-        optimizer=optimizer,
-        num_warmup_steps=config.warmup_steps,
-        num_training_steps=num_training_steps
-    )
+    if config.scheduler == "cosine" and config.eta_min != 0.0:
+        scheduler = CosineAnnealingWithWarmupAndEtaMin(
+            optimizer,
+            T_max=num_training_steps,
+            eta_min=config.eta_min,
+            warmup_steps=config.warmup_steps
+        )
+    else:
+        scheduler = get_scheduler(
+            config.scheduler,
+            optimizer=optimizer,
+            num_warmup_steps=config.warmup_steps,
+            num_training_steps=num_training_steps
+        )
 
     training_args = TrainingArguments(
         output_dir=config.output_dir,

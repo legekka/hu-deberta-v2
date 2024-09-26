@@ -2,11 +2,11 @@
     "name": "base-512",
     "model": "models/hu-deberta-v2-base",
     "tokenizer": "models/hu-deberta-v2-base",
-    "output_dir": "outputs/base-512",
+    "output_dir": "outputs/base-512-test",
     "train_dataset": {
         "path": "uonlp/CulturaX",
         "name": "hu",
-        "split": "train[:50000]"
+        "split": "train[:25000]"
     },
     "eval_dataset_split_size": 2000,
     "max_seq_length": 512,
