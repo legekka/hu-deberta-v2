@@ -114,8 +114,8 @@ if __name__ == '__main__':
         model = AutoModelForSequenceClassification.from_pretrained(args.resume, num_labels=3, id2label=id2label, label2id=label2id)
     else:
         model = AutoModelForSequenceClassification.from_pretrained(config.model, num_labels=3, id2label=id2label, label2id=label2id)
-
-    # set the model for single label classification
+    
+    for param in model.parameters(): param.data = param.data.contiguous()
     
     model.to(device)
     torch.cuda.empty_cache()
