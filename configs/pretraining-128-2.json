@@ -1,0 +1,29 @@
+{
+    "name": "base-128",
+    "model": "models/hu-deberta-v2-base",
+    "tokenizer": "models/hu-deberta-v2-base",
+    "output_dir": "outputs/base-128",
+    "train_dataset": {
+        "path": "uonlp/CulturaX",
+        "name": "hu",
+        "split": "train"
+    },
+    "eval_dataset_split_size": 2000,
+    "max_seq_length": 128,
+    "batch_size": 32,
+    "gradient_accumulation_steps": 1,
+    "num_epochs": 5,
+    "num_workers": 4,
+    "learning_rate": 7.5e-5,
+    "warmup_steps": 250,
+    "mlm_probability": 0.15,
+    "optimizer": "adamw_torch",
+    "scheduler": "constant",
+    "logging_steps": 10,
+    "save_steps": 100000,
+    "wandb": {
+        "project": "hu-deberta-v2",
+        "name": "pretraining-128",
+        "tags": ["pretraining", "base", "128"]
+    }
+}
