@@ -33,5 +33,5 @@ print(f"Model initialized with {model.num_parameters()} parameters.")
 print(f"Tokenizer initialized with {len(tokenizer)} tokens.")
 
 # model name: hu-deberta-v2-base
-model.save_pretrained("models/hu-deberta-v3-base")
-tokenizer.save_pretrained("models/hu-deberta-v3-base")
+model.save_pretrained("models/hu-deberta-v2-base")
+tokenizer.save_pretrained("models/hu-deberta-v2-base")

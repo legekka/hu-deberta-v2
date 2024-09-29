@@ -1,8 +1,8 @@
 {
-    "name": "base-v3-128",
+    "name": "base-128",
     "model": "models/hu-deberta-v3-base",
-    "tokenizer": "models/hu-deberta-v3-base",
-    "output_dir": "outputs/base-v3-128",
+    "tokenizer": "models/hu-deberta-v2-base",
+    "output_dir": "outputs/base-128",
     "train_dataset": {
         "path": "uonlp/CulturaX",
         "name": "hu",
@@ -23,7 +23,7 @@
     "logging_steps": 10,
     "save_steps": 50000,
     "wandb": {
-        "project": "hu-deberta-v3",
+        "project": "hu-deberta-v2",
         "name": "pretraining-128",
         "tags": ["pretraining", "base", "128"]
     }
