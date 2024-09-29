@@ -120,7 +120,7 @@ if __name__ == '__main__':
         print(f"Eval dataset size: {len(eval_dataset)}")
 
     if config.num_epochs is None:
-        num_epochs = config.max_steps * config.batch_size / len(train_dataset)
+        num_epochs = config.max_steps * config.batch_size / len(train_dataset) * config.gradient_accumulation_steps * accelerator.num_processes
     else:
         num_epochs = config.num_epochs
 
