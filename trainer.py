@@ -192,7 +192,7 @@ if __name__ == '__main__':
         wandb.config.update(config._jsonData)
         wandb.watch(model)
 
-    model.config.use_cache = False # mute warnings
+    # model.config.use_cache = False # mute warnings
 
     model, optimizer, scheduler, train_dataset, eval_dataset, trainer = accelerator.prepare(
         model, optimizer, scheduler, train_dataset, eval_dataset, trainer
