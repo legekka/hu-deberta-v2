@@ -1,6 +1,6 @@
 {
     "name": "base-128",
-    "model": "models/hu-deberta-v3-base",
+    "model": "models/hu-deberta-v2-base",
     "tokenizer": "models/hu-deberta-v2-base",
     "output_dir": "outputs/base-128",
     "train_dataset": {
