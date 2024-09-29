@@ -167,7 +167,7 @@ if __name__ == '__main__':
         bf16=True,
         report_to="wandb" if args.wandb else "none",
         ddp_find_unused_parameters=False,
-        dataloader_persistent_workers=True if config.num_workers > 0 else False,
+        dataloader_persistent_workers=False,
         dataloader_num_workers=config.num_workers,
         warmup_steps=config.warmup_steps,
         # include_tokens_per_second=True,
