@@ -81,8 +81,8 @@ def compute_metrics(eval_pred):
     acc = accuracy.compute(predictions=predictions, references=labels)
     mcc = matthews_corrcoef .compute(predictions=predictions, references=labels)
     return {
-        "accuracy": acc,
-        "mcc": mcc
+        "accuracy": acc['accuracy'],
+        "mcc": mcc['matthews_correlation']
     }
 
 def tokenize_text(examples):
@@ -112,6 +112,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-c', '--config_path', type=str, required=True, help='Path to the config file')
 parser.add_argument('-w', '--wandb', action='store_true', help='Use wandb for logging')
 parser.add_argument('-r', '--resume', type=str, default=None, help='Path to the checkpoint to resume training')
+parser.add_argument('-s', '--sweep', action='store_true', help='Run a hyperparameter sweep')
 
 args = parser.parse_args()
 
@@ -166,7 +167,7 @@ if __name__ == '__main__':
     eval_dataset.set_transform(tokenize_text)
 
     if config.num_epochs is None:
-        num_epochs = config.max_steps * config.batch_size / len(train_dataset)
+        num_epochs = config.max_steps * config.batch_size / len(train_dataset) * config.gradient_accumulation_steps * accelerator.num_processes
     else:
         num_epochs = config.num_epochs
 
@@ -236,14 +237,97 @@ if __name__ == '__main__':
     )
 
     if args.wandb and accelerator.is_main_process:
-        wandb.init(project=config.wandb["project"], name=config.wandb["name"], tags=config.wandb["tags"])
-        wandb.config.update(config._jsonData)
-        wandb.watch(model)
+        if args.sweep:
+            # Sweep initialization
+            sweep_config = {
+                "name": "hubert-HuCOLA-sweep",
+                "method": "bayes",
+                "metric": {
+                    "name": "mcc",
+                    "goal": "maximize"
+                },
+                "parameters": {
+                    "batch_size": {
+                        "values": [16, 64, 128, 256, 512, 1024]
+                    },
+                    "learning_rate": {
+                        "values": [1e-5, 3e-5, 5e-5, 1e-4]
+                    }
+                }
+            }
 
+            # Initialize sweep
+            sweep_id = wandb.sweep(sweep_config, project=config.wandb["project"])
+
+            def train_with_sweep():
+                wandb.init()
+
+                # Update parameters based on the sweep config
+                batch_size = wandb.config.batch_size
+                
+                if batch_size > 64:
+                    gradient_accumulation_steps = batch_size // 64
+                    batch_size = 64
+                else:
+                    gradient_accumulation_steps = 1
+
+                learning_rate = wandb.config.learning_rate
+
+                if config.num_epochs is None:
+                    num_epochs = config.max_steps * batch_size / len(train_dataset) * gradient_accumulation_steps * accelerator.num_processes
+                else:
+                    num_epochs = config.num_epochs
+
+                training_args = TrainingArguments(
+                    per_device_train_batch_size=batch_size,
+                    gradient_accumulation_steps=gradient_accumulation_steps,
+                    learning_rate=learning_rate,
+                    num_train_epochs=num_epochs,
+                    output_dir=config.output_dir,
+                    remove_unused_columns=False,
+                    lr_scheduler_type=config.scheduler,
+                    logging_steps=config.logging_steps,
+                    logging_dir=config.output_dir,
+                    save_strategy="steps" if config.save_steps is not None else "epoch",
+                    save_steps=config.save_steps,
+                    eval_strategy="steps" if config.save_steps is not None else "epoch",
+                    eval_steps=config.save_steps,
+                    seed=4242,
+                    bf16=True,
+                    report_to="wandb",
+                    ddp_find_unused_parameters=False,
+                    dataloader_persistent_workers=True if config.num_workers > 0 else False,
+                    dataloader_num_workers=config.num_workers,
+                    warmup_steps=config.warmup_steps,
+                    max_grad_norm=1.0
+                )
+                
+                trainer = CustomTrainer(
+                    model=model,        
+                    args=training_args,
+                    train_dataset=train_dataset,
+                    eval_dataset=eval_dataset,
+                    data_collator=data_collator,
+                    tokenizer=tokenizer,
+                    compute_metrics=compute_metrics,
+                )
+
+                # Train with the current configuration
+                trainer.train()
+
+            # Run the sweep agent
+            wandb.agent(sweep_id, train_with_sweep)
+        else:
+            # Normal WandB run
+            wandb.init(project=config.wandb["project"], name=config.wandb["name"], tags=config.wandb["tags"])
+            wandb.config.update(config._jsonData)
+            wandb.watch(model)
+
+    # Common training setup
     model.config.use_cache = False # mute warnings
 
     model, optimizer, scheduler, train_dataset, eval_dataset, trainer = accelerator.prepare(
         model, optimizer, scheduler, train_dataset, eval_dataset, trainer
     )
- 
+
     trainer.train()

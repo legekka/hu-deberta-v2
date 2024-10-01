@@ -17,7 +17,7 @@ if __name__ == '__main__':
     model.to(device)
     model.eval()
 
-    text = "Nyelvi modellek készítésekor [MASK] a megfelelő diverzitású tananyag használata."
+    text = "Franciaország fővárosa [MASK]."
 
 
     inputs = tokenizer(text, return_tensors="pt")

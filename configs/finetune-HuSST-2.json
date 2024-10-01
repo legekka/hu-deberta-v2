@@ -1,0 +1,24 @@
+{
+    "name": "HuSST",
+    "model": "models/hu-deberta-v2-base",
+    "tokenizer": "models/hu-deberta-v2-base",
+    "output_dir": "outputs/finetune-HuSST",
+    "train_dataset": "eval_datasets/HuSST",
+    "max_seq_length": 128,
+    "batch_size": 64,
+    "gradient_accumulation_steps": 2,
+    "max_steps": 1000,
+    "num_workers": 0,
+    "learning_rate": 1e-5,
+    "eta_min": 1e-6,
+    "save_steps": 250,
+    "warmup_steps": 100,
+    "optimizer": "adamw_torch",
+    "scheduler": "cosine",
+    "logging_steps": 5,
+    "wandb": {
+        "project": "husst-hu-deberta-v2",
+        "name": "finetune-HuSST",
+        "tags": ["finetune", "HuSST"]
+    }
+}
