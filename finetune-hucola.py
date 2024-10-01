@@ -255,7 +255,7 @@ if __name__ == '__main__':
                         "values": [1e-5, 3e-5, 5e-5, 1e-4]
                     },
                     "max_steps": {
-                        "values": [500, 1000]
+                        "values": [250, 500, 1000]
                     },
                 }
             }
@@ -285,6 +285,10 @@ if __name__ == '__main__':
                 else:
                     num_epochs = config.num_epochs
 
+                max_steps = num_epochs * len(train_dataset) // (batch_size * gradient_accumulation_steps * accelerator.num_processes)
+
+                eval_steps = max_steps // 5
+
                 training_args = TrainingArguments(
                     per_device_train_batch_size=batch_size,
                     gradient_accumulation_steps=gradient_accumulation_steps,
@@ -295,10 +299,10 @@ if __name__ == '__main__':
                     lr_scheduler_type=config.scheduler,
                     logging_steps=config.logging_steps,
                     logging_dir=config.output_dir,
-                    save_strategy="steps" if config.save_steps is not None else "epoch",
-                    save_steps=config.save_steps,
-                    eval_strategy="steps" if config.save_steps is not None else "epoch",
-                    eval_steps=config.save_steps,
+                    save_strategy="steps",
+                    save_steps=max_steps,
+                    eval_strategy="steps",
+                    eval_steps=eval_steps,
                     seed=4242,
                     bf16=True,
                     report_to="wandb",
