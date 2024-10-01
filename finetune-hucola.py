@@ -113,6 +113,7 @@ parser.add_argument('-c', '--config_path', type=str, required=True, help='Path t
 parser.add_argument('-w', '--wandb', action='store_true', help='Use wandb for logging')
 parser.add_argument('-r', '--resume', type=str, default=None, help='Path to the checkpoint to resume training')
 parser.add_argument('-s', '--sweep', action='store_true', help='Run a hyperparameter sweep')
+parser.add_argument('--sweep_id', type=str, default=None, help='Sweep ID to resume')
 
 args = parser.parse_args()
 
@@ -257,7 +258,10 @@ if __name__ == '__main__':
             }
 
             # Initialize sweep
-            sweep_id = wandb.sweep(sweep_config, project=config.wandb["project"])
+            if args.sweep_id is not None:
+                sweep_id = args.sweep_id
+            else:
+                sweep_id = wandb.sweep(sweep_config, project=config.wandb["project"])
 
             def train_with_sweep():
                 wandb.init()
