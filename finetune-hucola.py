@@ -244,7 +244,7 @@ if __name__ == '__main__':
                 "name": "hubert-HuCOLA-sweep",
                 "method": "bayes",
                 "metric": {
-                    "name": "mcc",
+                    "name": "eval_mcc",
                     "goal": "maximize"
                 },
                 "parameters": {
