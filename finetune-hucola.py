@@ -249,10 +249,10 @@ if __name__ == '__main__':
                 },
                 "parameters": {
                     "batch_size": {
-                        "values": [16, 64, 128, 256, 512, 1024, 2048]
+                        "values": [16, 64, 128, 256, 512]
                     },
                     "learning_rate": {
-                        "values": [1e-5, 3e-5, 5e-5, 1e-4]
+                        "values": [5e-6, 1e-5, 5e-5]
                     },
                     "max_steps": {
                         "values": [250, 500, 1000]
