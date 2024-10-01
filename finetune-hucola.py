@@ -320,7 +320,7 @@ if __name__ == '__main__':
                 trainer.train()
 
             # Run the sweep agent
-            wandb.agent(sweep_id, train_with_sweep)
+            wandb.agent(sweep_id, train_with_sweep, project=config.wandb["project"])
         else:
             # Normal WandB run
             wandb.init(project=config.wandb["project"], name=config.wandb["name"], tags=config.wandb["tags"])
