@@ -253,7 +253,10 @@ if __name__ == '__main__':
                     },
                     "learning_rate": {
                         "values": [1e-5, 3e-5, 5e-5, 1e-4]
-                    }
+                    },
+                    "max_steps": {
+                        "values": [500, 1000]
+                    },
                 }
             }
 
@@ -268,17 +271,17 @@ if __name__ == '__main__':
 
                 # Update parameters based on the sweep config
                 batch_size = wandb.config.batch_size
+                learning_rate = wandb.config.learning_rate
+                max_steps = wandb.config.max_steps
                 
                 if batch_size > 64:
                     gradient_accumulation_steps = batch_size // 64
                     batch_size = 64
                 else:
-                    gradient_accumulation_steps = 1
-
-                learning_rate = wandb.config.learning_rate
+                    gradient_accumulation_steps = 1              
 
                 if config.num_epochs is None:
-                    num_epochs = config.max_steps * batch_size / len(train_dataset) * gradient_accumulation_steps * accelerator.num_processes
+                    num_epochs = max_steps * batch_size / len(train_dataset) * gradient_accumulation_steps * accelerator.num_processes
                 else:
                     num_epochs = config.num_epochs
 
