@@ -24,7 +24,7 @@
     "save_steps": 20000,
     "wandb": {
         "project": "hu-deberta-v2",
-        "name": "pretraining-512",
+        "name": "base-512-pretraining",
         "tags": ["pretraining", "base", "512"]
     }
 }
