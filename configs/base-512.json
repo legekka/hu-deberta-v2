@@ -21,7 +21,7 @@
     "optimizer": "adamw_torch",
     "scheduler": "cosine",
     "logging_steps": 10,
-    "save_steps": 50000,
+    "save_steps": 20000,
     "wandb": {
         "project": "hu-deberta-v2",
         "name": "pretraining-512",
