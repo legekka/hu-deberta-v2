@@ -164,7 +164,7 @@ if __name__ == '__main__':
         eval_strategy="steps" if config.save_steps is not None else "epoch",
         eval_steps=config.save_steps,
         seed=4242,
-        bf16=True,
+        bf16=True if accelerator.mixed_precision == "bf16" else False,
         report_to="wandb" if args.wandb else "none",
         ddp_find_unused_parameters=False,
         dataloader_persistent_workers=False,
